@@ -1,0 +1,41 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Developers</h1>
+
+    <!-- loop through developers to get all developers -->
+    <div class="row">
+        <div class="col-12">
+            {% for developer in developers %}
+            <a href="{{ url_for('developer_bp.view_developer', developer=developer) }}" class="text-decoration-none">
+                <div class="card developer-card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ developer }}</h5>
+                    </div>
+                </div>
+            </a>
+            {% else %}
+            <div class="alert alert-warning" role="alert">
+                No developers found.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<br>
+<br>
+
+<!-- pagination -->
+<div class="text-center">
+    <div class="pagination d-inline-flex">
+        {% if page > 1 %}
+        <a class="nav-link" href="{{ url_for('developer_bp.view_all_developers', page=page-1) }}">Previous</a>
+        {% endif %}
+
+        {% if page < total_pages %}
+        <a class="nav-link ms-5" href="{{ url_for('developer_bp.view_all_developers', page=page+1) }}">Next</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

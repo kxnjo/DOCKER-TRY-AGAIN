@@ -1,0 +1,134 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="container-fluid mt-5">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="display-4">Games Library</h1>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sorting and Searching -->
+    <form method="GET" action="{{ url_for('game_bp.view_all_games') }}" class="d-flex align-items-center mb-3">
+        <div class="me-3">
+            <label for="sort_by" class="form-label me-2">Sort by:</label>
+            <select name="sort" id="sort_by" class="form-select d-inline-block w-auto">
+                <option value="title" {% if sort_by == 'title' %}selected{% endif %}>Title</option>
+                <option value="price" {% if sort_by == 'price' %}selected{% endif %}>Price</option>
+                <option value="release_date" {% if sort_by == 'release_date' %}selected{% endif %}>Release Date</option>
+            </select>
+        </div>
+        <div class="me-3">
+            <label for="sort_order" class="form-label me-2">Order:</label>
+            <button type="button" onclick="toggleSortOrder()" id="orderButton" class="btn btn-primary me-2">
+                {% if sort_order == 'asc' %}Ascending{% else %}Descending{% endif %}
+            </button>
+            <input type="hidden" name="order" id="sort_order" value="{{ sort_order }}">
+            <button type="submit" class="btn btn-secondary">Sort</button>
+        </div>
+        <div class="ms-auto">
+            <label for="search_game" class="form-label visually-hidden">Search:</label>
+            <input class="form-control me-2 d-inline-block w-auto" type="search" name="query" placeholder="Search for games" aria-label="Search" value="{{ request.args.get('query', '') }}">
+            <button class="btn btn-outline-success" type="submit">Search</button>
+        </div>
+    </form>
+
+    <!-- Games Table Section -->
+    <div class="card">
+        <!-- <div class="card-header bg-dark text-white">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h3 class="mb-0">Games Overview</h3>
+                </div>
+                <div class="col-3">
+                    <input type="text" class="form-control" id="gameSearch" placeholder="Search games...">
+                </div>
+            </div>
+        </div> -->
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table">
+                        <tr>
+                            <th style="width: 40%">Game Details</th>
+                            <th>Release Date</th>
+                            <th>Price</th>
+                            <th>Categories</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for game in games %}
+                        <tr>
+                            <!-- Game Details Column -->
+                            
+                            <td>
+                                <a href="{{ url_for('game_bp.view_game', game_id=game._id) }}" class="text-decoration-none">
+                                    <div class="d-flex align-items-center">
+                                        <img src="{{ game.image if game.image else url_for('static', filename='img/default_game.jpeg') }}" 
+                                            class="rounded me-3" style="width: 120px; height: 68px; object-fit: cover;"
+                                            alt="{{ game.title }}">
+                                        <div>
+                                            <h5 class="mb-1">{{ game.title }}</h5>
+                                            <small class="text-muted">ID: {{ game._id }}</small>
+                                        </div>
+                                    </div>
+                                </a>
+                            </td>
+                            <!-- Release Date Column -->
+                            <td>{{ game.release_date }}</td>
+                            
+                            <!-- Price Column -->
+                            <td>${{ "%.2f"|format(game.price) }}</td>
+                            
+                            <!-- Categories Column -->
+                            <td>
+                                {% for category in game.categories %}
+                                <span class="badge bg-secondary me-1">{{ category }}</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <br>
+    <br>
+    
+    <!-- pagination -->
+    <div class="text-center">
+        <div class="pagination d-inline-flex">
+            {% if page > 1 %}
+            <a class="nav-link" href="{{ url_for('game_bp.view_all_games', page=page-1, sort=sort_by, order=sort_order, query=search) }}">Previous</a>
+            {% endif %}
+
+            {% if page < total_pages %}
+            <a class="nav-link ms-5" href="{{ url_for('game_bp.view_all_games', page=page+1, sort=sort_by, order=sort_order, query=search) }}">Next</a>
+            {% endif %}
+        </div>
+    </div>
+
+
+<!-- sorting options javascript -->
+<script>
+    function toggleSortOrder() {
+        const orderInput = document.getElementById("sort_order");
+        const orderButton = document.getElementById("orderButton");
+
+        if (orderInput.value === 'asc') {
+            orderInput.value = 'desc';
+            orderButton.textContent = 'Descending'; // Update button text
+        } else {
+            orderInput.value = 'asc';
+            orderButton.textContent = 'Ascending'; // Update button text
+        }
+    }
+</script>
+
+
+{% endblock %}

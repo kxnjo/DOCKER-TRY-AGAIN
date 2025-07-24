@@ -1,0 +1,337 @@
+{% extends "index.html" %} {% block content %}
+<div class="container">
+	<div class="row">
+		<!-- Left Column: User Details -->
+		<div class="col-md-4 p-3">
+			<!-- User Image -->
+			<div class="card mb-4 border-0 bg-transparent text-center">
+                <div class="d-flex justify-content-center">
+                    <img
+                        src="{{ profile_pic }}"
+                        alt="User Image"
+                        class="card-img-top img-fluid rounded-circle" 
+                        style="max-width: 15vw; height: auto; aspect-ratio: 1; object-fit: cover;"/>
+                </div>
+                <div class="card-body text-center">
+                    <h4 class="card-title">{{ user.username }}</h4>
+                    <p class="card-text"><strong>Email:</strong> {{ user.email }}</p>
+                    
+                    {% if session["_id"] == user._id %}
+                    <!-- Button to Trigger Modal -->
+                    <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editUserModal">Edit Account</button>
+            
+                    <!-- Button to Trigger Delete Modal -->
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteUserModal">Delete Account</button>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="p-2" id="mutual-friends">
+                <!-- Table for Mutual Friends -->
+                {% if session["_id"] != user._id %}
+                <h3>Mutual Friends</h3>
+                {% set no_friends_message = "You have no mutual friends 😢" %}
+                {% else %}
+                <h3>Your Friends</h3>
+                {% set no_friends_message = "You have no friends 😢" %}
+                {% endif %}
+
+                {% if mutual_friends | length == 0 %}
+                <h5 class="justify-content-center d-flex">{{ no_friends_message }}</h5>
+                {% else %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Friend's Username</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for friend in mutual_friends %}
+                        <tr>
+                            <td>{{ friend.username }}</td>
+                            <td>
+                                <a href="{{ url_for('user_bp.dashboard', _id = friend._id) }}" class="btn btn-info btn-sm">View Profile</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+		</div>
+
+		<!-- Right Column: Carousel for Games, Tables for Reviews and Friends -->
+		<div class="col-md-8 p-3">
+
+			<!-- Header and Carousel Controls -->
+			<div class="d-flex row justify-content-between align-items-center mb-2">
+
+				<!-- Games Owned Header -->
+                <a class="col" href="{{ url_for('owned_game_bp.view_owned_game', uid = user._id) }}"><h3>Games Purchased</h3></a>
+                <!-- Carousel Controls -->
+                <div class="col px-3 d-flex justify-content-end">
+                    <button class="btn btn-link" type="button" data-bs-target="#gamesCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="btn btn-link" type="button" data-bs-target="#gamesCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+
+			</div>
+
+			<!-- Carousel for Games Owned -->
+            <div class="p-2" id="games_owned" style="min-height: 300px;">
+                {% if games == None or games|length == 0 %}
+                <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+                    <h3>No Games Purchased 😔</h3>
+                </div>
+
+                {% else %}
+                <div id="gamesCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% set game_groups = games | batch(3, fill_with=None) %} {% for game_group in game_groups %}
+                        <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
+                            <div class="row">
+                                {% for game in game_group %} {% if game %}
+                                <!-- Game Card (One-third width) -->
+                                <div class="col-md-4">
+                                    <div class="card bg-transparent border-0">
+                                        <img class="card-img-top" src="{{ game.image if game.image else url_for('static', filename='img/default_game.jpeg') }}" alt="{{ game.title }}" style="min-height:150px; width:auto; object-fit: cover;"/>
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ game.title }}</h5>
+                                            <p>Hours played: {{ game.hours_played }} h</p>
+                                            <p>Purchase date: {{ game.purchase_date }}</p>
+                                            <a href="{{ url_for('game_bp.view_game', game_id=game.game_id) }}" class="btn btn-info btn-sm">View Game</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %} {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="p-2" id="reviews" style="min-height: 300px;">
+                <!-- Table for Reviews Left by User -->
+                {% if session["_id"] != user._id %}
+                <h3>Their Reviews</h3>
+                {% else %}
+                <h3>Your Reviews</h3>
+                {% endif %}
+
+                {% if user_reviews | length == 0 %}
+                <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+                    <h5>No Reviews Yet</h5>
+                </div>
+                {% else %}
+                <table class="table mb-4">
+                    <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Game Title</th>
+                        <th>Review</th>
+                        <th>Recommmended</th>
+                        {% if session["_id"] ==  user._id %}
+                        <th>Actions</th>
+                        {% endif %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for review in user_reviews %}
+                    <tr>
+                        <td>{{ review.review_date}}</td>
+                        <td>{{ review.game_title }}</td>
+                        <td>{{review.review_text}}</td>
+<!--                        <td>{{ review.recommended }}</td>-->
+                         <td>
+                            {% if review.recommended %}
+                                Recommended
+                            {% else %}
+                                Not Recommended
+                            {% endif %}
+                         </td>
+
+                        {% if session["_id"] ==  user._id %}
+                        <td>
+                            <div class="d-flex gap-2">
+                                <!-- Edit Review Button -->
+                                <button type="button" class="btn btn-warning btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editReviewModal{{ review.game_id }}">
+                                    Edit
+                                </button>
+                                <!-- Delete Button -->
+                                <button type="button" class="btn btn-danger btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteReviewModal{{review.game_id}}"
+                                class="btn btn-danger btn-sm">Delete</button>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+
+		</div>
+
+		<!-- Modal for Editing User Details -->
+		<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<form action="{{ url_for('user_bp.edit_user', _id=user._id) }}" method="POST" enctype="multipart/form-data">
+						<div class="modal-header">
+							<h5 class="modal-title" id="editUserModalLabel">Edit User Details</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+						</div>
+						<div class="modal-body">
+							<!-- Username Field -->
+							<div class="mb-3">
+								<label for="username" class="form-label">Username</label>
+								<input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required />
+							</div>
+
+							<!-- Email Field -->
+							<div class="mb-3">
+								<label for="email" class="form-label">Email</label>
+								<input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required />
+							</div>
+
+                            <!-- Upload an image -->
+                            <div class="mb-3">
+                                <label for="profile-picture" class="form-label">Upload Profile Picture</label>
+                                <input class="form-control" type="file" id="profile-picture" name="profile-picture" accept="image/*">
+                            </div>
+
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+							<button type="submit" class="btn btn-primary">Save Changes</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<!-- Modal for Deleting User -->
+		<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="deleteUserModalLabel">Confirm Account Deletion</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<p>Are you sure you want to delete your account? This action cannot be undone.</p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+						<!-- Form for Deleting User -->
+						<a href="{{ url_for('user_bp.delete_user', _id=user._id) }}" class="btn btn-danger">Confirm Delete</a>
+					</div>
+				</div>
+			</div>
+		</div>
+
+        <!-- Modal for editing review -->
+        {% for review in user_reviews %}
+        <div class="modal fade" id="editReviewModal{{ review.game_id }}" tabindex="-1"
+             aria-labelledby="editReviewModalLabel{{ review.game_id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="POST" action="{{ url_for('review_bp.mongo_add') }}">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editReviewModalLabel{{ review.game_id }}">Edit Review for {{ review.game_title }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Hidden input to pass the review ID -->
+                            <input type="hidden" name="review_id" value="{{review.review_id}}">
+                            <input type ="hidden" name="game_id" value="{{review.game_id}}">
+                            <input type="hidden" name="source" value="dashboard">
+
+                            <!-- Review Text Field -->
+                            <div class="mb-3">
+                                <div class="form-group">
+                                    <label for="reviewText{{ review.review_id }}">Review Text</label>
+                                    <textarea class="form-control" id="reviewText{{ review.review_id }}" rows="3" maxlength="5000" oninput="updateCharCount('{{ review.review_id }}')" name="review_text">{{ review.review_text }}</textarea>
+                                    <small id="charCount{{ review.review_id }}" class="form-text text-muted">0 characters</small>
+                                </div>
+                            </div>
+
+                            <!-- Recommended Field -->
+                            <div class="mb-3">
+                                <div class="form-group">
+                                    <label for="recommended{{ review.review_id }}">Recommended</label>
+                                    <select class="form-control" id="recommended{{ review.review_id }}"
+                                            name="recommended">
+                                     <option value="Recommended" {% if review.recommended %} selected {% endif %}>Recommended</option>
+                                        <option value="Not Recommended" {% if not review.recommended %} selected {% endif %}>Not Recommended</option>
+                                </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+
+		<!-- Modal for Deleting Review -->
+		<div class="modal fade" id="deleteReviewModal{{review.game_id}}" tabindex="-1" aria-labelledby="deleteReviewModal{{review.game_id}}" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+                    <form method="GET" action="{{ url_for('review_bp.delete_review') }}">
+					<div class="modal-header">
+						<h5 class="modal-title" id="deleteReviewModalLabel{{review.game_id}}">Confirm Review Deletion</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+                        <input type ="hidden" name="game_id" value="{{review.game_id}}">
+                        <input type="hidden" name="source" value="dashboard">
+						<p>Are you sure you want to delete your review? This action cannot be undone.</p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+						<!-- Form for Deleting Review -->
+                        <button type="submit" class="btn btn-danger">Delete Review</button>
+					</div>
+                    </form>
+				</div>
+			</div>
+		</div>
+        {% endfor %}
+	</div>
+</div>
+<script>
+    function updateCharCount(reviewId) {
+        const textarea = document.getElementById(`reviewText${reviewId}`);
+        const charCountSpan = document.getElementById(`charCount${reviewId}`);
+        const currentLength = textarea.value.length;
+        console.log("hello");
+        charCountSpan.textContent = `${currentLength}/5000 characters`;
+    }
+
+    // Initialize the character count when the page loads
+    document.addEventListener("DOMContentLoaded", function() {
+        {% for review in user_reviews %}
+        updateCharCount('{{ review.review_id }}');  // Initialize the count for any pre-filled text
+        {% endfor %}
+    });
+
+</script>
+{% endblock %}

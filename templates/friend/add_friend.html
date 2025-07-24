@@ -1,0 +1,117 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <!-- Add friend through username Section -->
+                    <h1 class="card-title text-center mb-4">Find and Add Friends</h1>
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            <div class="alert alert-info">
+                            {% for message in messages %}
+                                {{ message }}
+                            {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                    <form method="POST" action="{{ url_for('friendlist_bp.add_friend') }}" class="mb-4">
+                        <div class="input-group">
+                            <input id="friend" name="friend" type="text" class="form-control" placeholder="Enter your friend's profile name" aria-label="Friend's profile name" required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus me-2"></i>Add Friend
+                            </button>
+                        </div>
+                    </form>
+                    <div class="text-center">
+                        <a href="{{ url_for('friendlist_bp.view_friends') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Friend List
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <!-- Add friends through suggest friends Section -->
+                    {% if suggested_friends %}
+                    <h2 class="card-title text-center mb-4">Suggested Friends</h2>
+                    <div id="suggested-friends" class="row row-cols-1 row-cols-md-2 g-4">
+                        {% for friend in suggested_friends %}
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                        <h5 class="card-title">{{ friend.username }}</h5>
+                                        <form method="POST" action="{{ url_for('friendlist_bp.add_friend') }}" >
+                                            <input type="hidden" name="friend" value="{{ friend.username }}">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-user-plus me-2"></i>Add Friend
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12">
+                            <p class="text-center text-muted">No suggested friends at the moment.</p>
+                        </div>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .card {
+        border: none;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+    }
+    .card:hover {
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+    .btn-outline-secondary:hover {
+        background-color: #6c757d;
+        color: white;
+    }
+    .add-friend-btn {
+        transition: all 0.3s ease;
+    }
+    .add-friend-btn:hover {
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Placeholder for potential AJAX friend addition
+    document.querySelectorAll('.add-friend-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const friendId = this.getAttribute('data-friend-id');
+            // Here you would typically send an AJAX request to add the friend
+            console.log('Adding friend with ID:', friendId);
+            // After successful addition, you might want to update the UI
+            this.textContent = 'Friend Added';
+            this.disabled = true;
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,455 @@
+{% extends "index.html" %}
+
+{% block scripts %}
+<script>
+    // for pagination use
+    function update_params(collection, key, value) {
+		const url = new URL(window.location.href);
+
+		// add the query params in
+		url.searchParams.set('filter_type', collection);
+		url.searchParams.set(key, value); 
+
+		// refresh/redirect with query
+		window.location.href = url.toString(); 
+	}
+
+    function handleReset() {
+        const url = new URL(window.location.href); // Get the current URL
+        
+        // Clear all query parameters
+        url.search = ""; 
+
+        // Redirect without query parameters
+        console.log("Clearing all query parameters. Redirecting to:", url.toString());
+        window.location.href = url.toString();
+    }
+
+    function games_search_params() {
+		const url = new URL(window.location.href);
+		
+		// get the search query
+		const query = document.querySelector('input[name="games_search_query"]').value;
+
+		// add the query params in
+		url.searchParams.set("search", query); 
+		url.searchParams.delete('page'); // Reset query
+		url.searchParams.delete('sort_field'); // Reset query
+		url.searchParams.delete('sort_order'); // Reset query
+
+		// refresh/redirect with query
+		window.location.href = url.toString(); 
+	}
+
+    function handleSortChange(selectElement) {
+		const url = new URL(window.location.href); // Get the current URL
+
+		// extract out the field to sort, and the order
+		if (selectElement.value == "clear") {
+			// Clear all query parameters
+			url.search = ""; 
+
+			// Redirect without query parameters
+			console.log("Clearing all query parameters. Redirecting to:", url.toString());
+			window.location.href = url.toString();
+		}
+		else {
+			const [collection, field, order] = selectElement.value.split('-');
+	
+			if (field && order) {	
+				// add the query params in
+				url.searchParams.set('sort_field', field);
+				url.searchParams.set('sort_order', (order === "asc") ? 1 : -1);
+				url.searchParams.delete('page'); // Reset pagination to first page
+	
+				// refresh/redirect with query
+				console.log("Redirecting to:", url.toString());
+				window.location.href = url.toString();
+			}
+		}
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+		const urlParams = new URLSearchParams(window.location.search); // Get query parameters
+		const sortField = urlParams.get("sort_field"); // Get 'sort_field' value
+		const sortOrder = urlParams.get("sort_order") == "1" ? "asc" : "desc" ;
+
+		if (sortField) {
+            const selectElement = document.getElementById("games-uid-sort");
+            let selected = "games-" + sortField + "-" + sortOrder;
+            console.log("selected: " + selected);
+            selectElement.value = selected; // Set the dropdown value
+		}
+
+    });
+
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="display-4">Games Library</h1>
+                <button class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#addGameModal">
+                    <i class="fas fa-plus"></i> Add New Game
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Games Table Section -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <div class="row align-items-center">
+                <!-- Sorting Dropdown -->
+                <div class="col-md-4">
+                    <label for="games-uid-sort" class="form-label mb-1">Sort Games:</label>
+                    <select id="games-uid-sort" class="form-select sort-select" onchange="handleSortChange(this)">
+                        <option value="clear">Select Sorting</option>	
+                        <option value="games-title-asc">Title A-Z</option>
+                        <option value="games-title-desc">Title Z-A</option>
+                        <option value="games-release_date-asc">Date Created Ascending</option>
+                        <option value="games-release_date-desc">Date Created Descending</option>
+                    </select>
+                </div>
+        
+                <!-- Search Bar and Button -->
+                <div class="col-md-5">
+                    <label for="gameSearch" class="form-label mb-1">Search Games:</label>
+                    <form method="GET" onsubmit="event.preventDefault(); games_search_params();" class="d-flex">
+                        <input type="text" name="games_search_query" class="form-control" placeholder="Search..." value="{{ games_search_query }}">
+                    </form>
+                </div>
+        
+                <!-- Additional Actions (Optional) -->
+                <div class="col-md-3 text-end">
+                    <button class="btn btn-secondary mt-2" onclick="handleReset()">Reset</button>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="d-flex justify-content-center mt-3">
+                <nav aria-label="Game page navigation">
+                    <ul class="pagination">
+                        <!-- Previous Page -->
+                        <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+                            <a 
+                                class="page-link" 
+                                href="javascript:update_params('games', 'page', {{ max(1, page - 1) }})" 
+                                aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+
+                        <!-- Page Numbers -->
+                        {% set max_visible_pages = 10 %} {# Updated threshold to 10 pages #}
+                        {% if game_total_pages <= max_visible_pages %}
+                            {# If total pages are 10 or less, show all pages #}
+                            {% for p in range(1, game_total_pages + 1) %}
+                                <li class="page-item {% if p == page %}active{% endif %}">
+                                    <a class="page-link" href="javascript:update_params('games', 'page', {{ p }})">{{ p }}</a>
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            {# Complex pagination for more than 10 pages #}
+                            {# Always show first page #}
+                            <li class="page-item {% if page == 1 %}active{% endif %}">
+                                <a class="page-link" href="javascript:update_params('games', 'page', 1)">1</a>
+                            </li>
+
+                            {# Show ellipsis before middle pages if far from start #}
+                            {% if page > (max_visible_pages // 2 + 1) %}
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            {% endif %}
+
+                            {# Middle pages #}
+                            {% set start_page = max(2, page - (max_visible_pages // 2)) %}
+                            {% set end_page = min(game_total_pages - 1, page + (max_visible_pages // 2 - 1)) %}
+                            {% for p in range(start_page, end_page + 1) %}
+                                {% if p > 1 and p < game_total_pages %}
+                                    <li class="page-item {% if p == page %}active{% endif %}">
+                                        <a class="page-link" href="javascript:update_params('games', 'page', {{ p }})">{{ p }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {# Show ellipsis after middle pages if far from end #}
+                            {% if page < game_total_pages - (max_visible_pages // 2) %}
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            {% endif %}
+
+                            {# Always show last page #}
+                            <li class="page-item {% if page == game_total_pages %}active{% endif %}">
+                                <a class="page-link" href="javascript:update_params('games', 'page', {{ game_total_pages }})">{{ game_total_pages }}</a>
+                            </li>
+                        {% endif %}
+
+                        <!-- Next Page -->
+                        <li class="page-item {% if page >= game_total_pages %}disabled{% endif %}">
+                            <a 
+                                class="page-link" 
+                                href="javascript:update_params('games', 'page', {{ min(game_total_pages, page + 1) }})" 
+                                aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+
+        </div>        
+        
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table">
+                        <tr>
+                            <th style="width: 40%">Game Details</th>
+                            <th>Release Date</th>
+                            <th>Price</th>
+                            <th>Categories</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for game in games %}
+                        <tr>
+                            <!-- Game Details Column -->
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ game.image if game.image else url_for('static', filename='img/default_game.jpeg') }}" 
+                                         class="rounded me-3" style="width: 120px; height: 68px; object-fit: cover;"
+                                         alt="{{ game.title }}">
+                                    <div>
+                                        <h5 class="mb-1">{{ game.title }}</h5>
+                                        <small class="text-muted">ID: {{ game._id }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Release Date Column -->
+                            <td>{{ game.release_date }}</td>
+                            
+                            <!-- Price Column -->
+                            <td>${{ "%.2f"|float(game.price) }}</td>
+                            
+                            <!-- Categories Column -->
+                            <td>
+                                {% for category in game.categories %}
+                                <span class="badge bg-secondary me-1">{{ category }}</span>
+                                {% endfor %}
+                            </td>
+                            
+                            <!-- Actions Column -->
+                            <td>
+                                <div class="col btn-group">
+                                    <button class="btn btn-info" data-bs-toggle="modal" 
+                                            data-bs-target="#viewGameModal{{ game._id }}" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-primary" data-bs-toggle="modal" 
+                                            data-bs-target="#editGameModal{{ game._id }}" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger" data-bs-toggle="modal" 
+                                            data-bs-target="#deleteGameModal{{ game._id }}" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Game Modal -->
+    {% for game in games %}
+    <div class="modal fade" id="viewGameModal{{ game._id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">{{ game.title }}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <img src="{{ game.image if game.image else url_for('static', filename='img/default_game.jpeg') }}" 
+                                 class="img-fluid rounded" alt="{{ game.title }}">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Game Details</h5>
+                                    <dl class="row mb-0">
+                                        <dt class="col-sm-4">Release Date:</dt>
+                                        <dd class="col-sm-8">{{ game.release_date }}</dd>
+                                        
+                                        <dt class="col-sm-4">Price:</dt>
+                                        <dd class="col-sm-8">${{ "%.2f"|float(game.price) }}</dd>
+                                        
+                                        <dt class="col-sm-4">Categories:</dt>
+                                        <dd class="col-sm-8">
+                                            {% for category in game.categories %}
+                                            <span class="badge bg-secondary me-1">{{ category }}</span>
+                                            {% endfor %}
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Game Modal -->
+    <div class="modal fade" id="editGameModal{{ game._id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header text-white">
+                    <h5 class="modal-title">Edit Game</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{{ url_for('game_bp.edit_game', game_id=game._id) }}" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="title{{ game._id }}" class="form-label">Title</label>
+                                    <input type="text" class="form-control" id="title{{ game._id }}" 
+                                           name="title" value="{{ game.title }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="release_date{{ game._id }}" class="form-label">Release Date</label>
+                                    <input type="date" class="form-control" id="release_date{{ game._id }}" 
+                                           name="release_date" value="{{ game.release_date }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="price{{ game._id }}" class="form-label">Price</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" step="0.01" class="form-control" id="price{{ game._id }}" 
+                                               name="price" value="{{ '%.2f'|float(game.price) }}" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="categories{{ game._id }}" class="form-label">Categories</label>
+                                    <select class="form-select" id="categories{{ game._id }}" name="categories[]" multiple required>
+                                        {% for category in all_categories %}
+                                        <option value="{{ category }}" 
+                                            {% if category in game.categories %}selected{% endif %}>
+                                            {{ category }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Old Image</label>
+                                    <img src="{{ game.image if game.image else url_for('static', filename='img/default_game.jpeg') }}" 
+                                         class="img-fluid rounded mb-2" alt="{{ game.title }}" name="game_image">
+                                    <input type="file" class="form-control" id="game_image{{ game._id }}" name="game_image">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Game Modal -->
+    <div class="modal fade" id="deleteGameModal{{ game._id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-white">
+                    <h5 class="modal-title">Delete Game</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete "{{ game.title }}"? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form action="{{ url_for('game_bp.delete_game', game_id=game._id) }}" method="POST">
+                        <button type="submit" class="btn btn-danger">Delete Game</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Add New Game Modal -->
+    <div class="modal fade" id="addGameModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Add New Game</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{{ url_for('game_bp.create_game', developer_name=developer_name) }}" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">Title</label>
+                                    <input type="text" class="form-control" id="title" name="title" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="release_date" class="form-label">Release Date</label>
+                                    <input type="date" class="form-control" id="release_date" name="release_date" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="price" class="form-label">Price</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" step="0.01" class="form-control" id="price" name="price" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="categories" class="form-label">Categories</label>
+                                    <select class="form-select" id="categories" name="categories[]" multiple required>
+                                        {% for category in all_categories %}
+                                            <option value="{{ category }}" 
+                                                {% if category in selected_categories %}selected{% endif %}>
+                                                {{ category }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="game_image" class="form-label">Game Image</label>
+                                    <input type="file" class="form-control" id="game_image" name="game_image">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success">Add Game</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+{% endblock %}

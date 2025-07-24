@@ -1,0 +1,59 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4`x-icon">
+  <a class="navbar-brand" href="{{ url_for('home') }}">
+    <img src=" {{ url_for('static', filename='img/fries.png') }} " width="50" height="50" alt=""> Fry
+  </a>
+
+  <!-- Toggler button for small screens -->
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <!-- Collapsible part of the navbar -->
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link" href="{{ url_for('home') }}">Home <span class="sr-only"></span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('game_bp.view_all_games') }}">Games</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('review_bp.mongo_test') }}">Reviews</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('category_bp.view_all_categories') }}">Categories</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('developer_bp.view_all_developers') }}">Developers</a>
+      </li>
+    </ul>
+
+    {% if "_id" not in session %}
+    <!-- User account button fixed to top right -->
+    <ul class="navbar-nav ms-auto px-3">
+      <li class="nav-item">
+        <a class="nav-link btn btn-primary text-white" href="{{ url_for('user_bp.login') }}">
+          <i class="fa fa-user px-2" aria-hidden="true"></i> Login
+        </a>
+      </li>
+    </ul>
+    {% else %}
+    <!-- User account button fixed to top right -->
+    <ul class="navbar-nav ms-auto px-3">
+      <li class="nav-item dropdown text-white">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="fa fa-user"></i> Welcome, {{ session["username"] }}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="{{ url_for('user_bp.dashboard') }}"><i class="fa-solid fa-grip"></i> View Dashboard</a></li>
+          <li><a class="dropdown-item" href="{{ url_for('friendlist_bp.view_friends') }}"><i class="fa-solid fa-user-group"></i> Friends</a></li>
+          <li><a class="dropdown-item" href="{{ url_for('wishlist_bp.viewWishlist') }}"><i class="fa-solid fa-heart"></i> Wishlist</a></li>
+          <li><a class="dropdown-item" href="{{ url_for('owned_game_bp.view_owned_game') }}"><i class="fa-solid fa-gamepad"></i> Owned Games</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="{{ url_for('user_bp.logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+        </ul>
+      </li>
+    </ul>
+    {% endif %}
+  </div>
+</nav>
