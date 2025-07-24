@@ -22,7 +22,7 @@ jobs:
 
       - name: Test Hello World Page
         run: |
-          curl -s -o response.html http://localhost:8080/index.html
+          curl -s -o response.html http://localhost
           grep "Hello World" response.html
           
       - name: Stop Nginx container
