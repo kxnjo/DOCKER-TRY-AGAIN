@@ -5,6 +5,12 @@ services:
       - my_network
     ports:
       - "8080:80"
+  # integrating nginx
+  nginxwebsvr:
+    image: nginx:alpine
+    container_name: nginxwebsvr
+    ports:
+      - "80:80"
 
 networks:
   my_network:
