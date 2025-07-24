@@ -1,0 +1,19 @@
+{
+  "name": "try-again",
+  "version": "1.0.0",
+  "description": "FryGames is a centralized platform where users can browse and purchase games, connect with friends, and leave game reviews. It also provides price trends to help users make informed purchase decisions.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kxnjo/DOCKER-TRY-AGAIN.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kxnjo/DOCKER-TRY-AGAIN/issues"
+  },
+  "homepage": "https://github.com/kxnjo/DOCKER-TRY-AGAIN#readme"
+}
