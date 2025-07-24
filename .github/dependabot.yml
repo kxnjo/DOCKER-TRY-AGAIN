@@ -1,6 +1,6 @@
 version: 2
 updates:
-  - package-ecosystem: "npm" # or "maven", "gradle", "pip"
-    directory: "/"
+  - package-ecosystem: "npm"
+    directory: "/"  # where your package.json is
     schedule:
-      ainterval: "daily"
+      interval: "daily"  # ✅ correct spelling
