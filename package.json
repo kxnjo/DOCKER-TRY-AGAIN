@@ -16,5 +16,16 @@
   "bugs": {
     "url": "https://github.com/kxnjo/DOCKER-TRY-AGAIN/issues"
   },
-  "homepage": "https://github.com/kxnjo/DOCKER-TRY-AGAIN#readme"
+  "homepage": "https://github.com/kxnjo/DOCKER-TRY-AGAIN#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.31.0",
+    "@microsoft/eslint-formatter-sarif": "^3.1.0",
+    "eslint": "^9.31.0",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.3.0",
+    "typescript-eslint": "^8.38.0"
+  },
+  "dependencies": {
+    "eslint-plugin-security": "^3.0.1"
+  }
 }
