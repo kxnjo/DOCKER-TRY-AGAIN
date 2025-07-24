@@ -22,6 +22,18 @@ services:
       MYSQL_DATABASE: testdb
       MYSQL_USER: user
       MYSQL_PASSWORD: pass
+  
+  # integrating git server
+  git-server:
+    build:
+      dockerfile: ./repos/gitserver.Dockerfile
+      context: .
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./repos:/var/www/git
+      - ./repos:/keys # if using ssh
 
 networks:
   my_network:
