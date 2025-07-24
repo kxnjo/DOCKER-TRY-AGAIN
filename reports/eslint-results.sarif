@@ -9,11 +9,13 @@
           "informationUri": "https://eslint.org",
           "rules": [
             {
-              "id": "no-undef",
-              "helpUri": "https://eslint.org/docs/latest/rules/no-undef",
-              "properties": {},
+              "id": "security/detect-eval-with-expression",
+              "helpUri": "https://github.com/eslint-community/eslint-plugin-security/blob/main/docs/rules/detect-eval-with-expression.md",
+              "properties": {
+                "category": "Possible Security Vulnerability"
+              },
               "shortDescription": {
-                "text": "Disallow the use of undeclared variables unless mentioned in `/*global */` comments"
+                "text": "Detects \"eval(variable)\" which can allow an attacker to run arbitrary code inside your process."
               }
             }
           ],
@@ -23,22 +25,7 @@
       "artifacts": [
         {
           "location": {
-            "uri": "file:///Users/xinhui/Desktop/Y2T3/ICT2216_ssd/labs/TRY%20AGAIN/eslint.config.mjs"
-          }
-        },
-        {
-          "location": {
-            "uri": "file:///Users/xinhui/Desktop/Y2T3/ICT2216_ssd/labs/TRY%20AGAIN/src/server.js"
-          }
-        },
-        {
-          "location": {
-            "uri": "file:///Users/xinhui/Desktop/Y2T3/ICT2216_ssd/labs/TRY%20AGAIN/tests/SeleniumTest.mjs"
-          }
-        },
-        {
-          "location": {
-            "uri": "file:///Users/xinhui/Desktop/Y2T3/ICT2216_ssd/labs/TRY%20AGAIN/tests/test.js"
+            "uri": "file:///Users/xinhui/Desktop/Y2T3/ICT2216_ssd/labs/TRY%20AGAIN/test.js"
           }
         }
       ],
@@ -46,97 +33,25 @@
         {
           "level": "error",
           "message": {
-            "text": "'describe' is not defined."
+            "text": "eval with argument of type TemplateLiteral"
           },
           "locations": [
             {
               "physicalLocation": {
                 "artifactLocation": {
-                  "uri": "file:///Users/xinhui/Desktop/Y2T3/ICT2216_ssd/labs/TRY%20AGAIN/tests/test.js",
-                  "index": 3
+                  "uri": "file:///Users/xinhui/Desktop/Y2T3/ICT2216_ssd/labs/TRY%20AGAIN/test.js",
+                  "index": 0
                 },
                 "region": {
-                  "startLine": 4,
+                  "startLine": 2,
                   "startColumn": 1,
-                  "endLine": 4,
-                  "endColumn": 9
+                  "endLine": 2,
+                  "endColumn": 34
                 }
               }
             }
           ],
-          "ruleId": "no-undef",
-          "ruleIndex": 0
-        },
-        {
-          "level": "error",
-          "message": {
-            "text": "'it' is not defined."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "file:///Users/xinhui/Desktop/Y2T3/ICT2216_ssd/labs/TRY%20AGAIN/tests/test.js",
-                  "index": 3
-                },
-                "region": {
-                  "startLine": 5,
-                  "startColumn": 3,
-                  "endLine": 5,
-                  "endColumn": 5
-                }
-              }
-            }
-          ],
-          "ruleId": "no-undef",
-          "ruleIndex": 0
-        },
-        {
-          "level": "error",
-          "message": {
-            "text": "'it' is not defined."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "file:///Users/xinhui/Desktop/Y2T3/ICT2216_ssd/labs/TRY%20AGAIN/tests/test.js",
-                  "index": 3
-                },
-                "region": {
-                  "startLine": 11,
-                  "startColumn": 3,
-                  "endLine": 11,
-                  "endColumn": 5
-                }
-              }
-            }
-          ],
-          "ruleId": "no-undef",
-          "ruleIndex": 0
-        },
-        {
-          "level": "error",
-          "message": {
-            "text": "'after' is not defined."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "file:///Users/xinhui/Desktop/Y2T3/ICT2216_ssd/labs/TRY%20AGAIN/tests/test.js",
-                  "index": 3
-                },
-                "region": {
-                  "startLine": 18,
-                  "startColumn": 3,
-                  "endLine": 18,
-                  "endColumn": 8
-                }
-              }
-            }
-          ],
-          "ruleId": "no-undef",
+          "ruleId": "security/detect-eval-with-expression",
           "ruleIndex": 0
         }
       ]
