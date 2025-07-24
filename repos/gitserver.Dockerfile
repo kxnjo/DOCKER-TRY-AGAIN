@@ -29,3 +29,23 @@ ENTRYPOINT ["tini", "--", "git-http-server", "-p", "3000", "/home/git"]
 # git-http-server: a tool that serves your Git repositories over HTTP
 # -p and 3000: runs on port 3000
 # /home/git: the directory it serves
+
+# ✅🔐 for gitserver with ssh access ======
+# RUN apk add --no-cache openssh git
+
+# # create git user and set permissions
+# RUN adduser -D -g git git \
+#   && mkdir -p /home/git/.ssh /git-server \
+#   && chown -R git:git /home/git /git-server
+
+# # copy SSH keys from mounted volume
+# COPY ./init.sh /init.sh
+# RUN chmod +x /init.sh
+
+# USER git
+# WORKDIR /git-server
+
+# # init bare repo (optional, can do within init.sh too)
+# RUN git init --bare /git-server/repository.git
+
+# ENTRYPOINT ["/init.sh"]
