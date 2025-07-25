@@ -1,6 +1,10 @@
 name: ESLint Code Analysis
 
-on: [push, pull_request] 
+on: [push, pull_request]
+
+permissions:                # ✅ Add this block
+  contents: read
+  security-events: write    # 👈 Required to upload SARIF to GitHub Code Scanning
 
 jobs:
   eslint:
